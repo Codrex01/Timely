@@ -54,13 +54,16 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## 🏛️ System Architecture & Flow Diagrams
+## 🏛️ System Architecture & Visual Diagrams
 
-### System Architecture Diagram
-![System Architecture](docs/images/smart_campus_system_architecture.jpg)
+### 1. Technical Skeletal Flow Diagram
+![Technical Skeletal Flow](docs/images/tech_skeletal_flow.jpg)
 
-### End-to-End Flow Diagram
-![Flow Diagram](docs/images/smart_campus_flow_diagram.jpg)
+### 2. Product Usefulness & Value Transformation
+![App Usefulness Visualization](docs/images/app_usefulness_visualization.jpg)
+
+### 3. Detailed Data Pipeline
+![Smart Campus Flow Diagram](docs/images/smart_campus_flow_diagram.jpg)
 
 ### High-Level Architecture Overview
 ![Architecture Overview](docs/images/smart_campus_architecture.jpg)
