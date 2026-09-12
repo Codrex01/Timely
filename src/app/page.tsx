@@ -179,6 +179,8 @@ export default function SmartCampusDashboard() {
             setIngestInitialMode('email');
             setIsIngestModalOpen(true);
           }}
+          onResetSeed={handleResetSeed}
+          isSeeding={isSeeding}
           urgentCount={urgentTasksCount}
           completedCount={completedTasksCount}
         />

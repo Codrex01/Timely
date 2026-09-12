@@ -12,6 +12,8 @@ interface TopNavProps {
   onOpenChat: () => void;
   onOpenProfile: () => void;
   onOpenGmailConnect: () => void;
+  onResetSeed?: () => void;
+  isSeeding?: boolean;
   urgentCount: number;
   completedCount: number;
 }
@@ -24,6 +26,8 @@ export const TopNav: React.FC<TopNavProps> = ({
   onOpenChat,
   onOpenProfile,
   onOpenGmailConnect,
+  onResetSeed,
+  isSeeding,
   urgentCount,
   completedCount,
 }) => {
@@ -64,6 +68,19 @@ export const TopNav: React.FC<TopNavProps> = ({
 
       {/* Right Actions */}
       <div className="flex items-center space-x-2">
+        {/* Reset Demo Seed Button */}
+        {onResetSeed && (
+          <button
+            onClick={onResetSeed}
+            disabled={isSeeding}
+            title="Restore all sample campus notices and tasks"
+            className="flex items-center space-x-1.5 px-2.5 py-1.5 bg-[#1C1B17] hover:bg-[#24221E] text-[#A6A29A] hover:text-[#F2F0EA] border border-[#2B2924] hover:border-[#3D3A33] rounded-[6px] text-xs font-medium transition-colors"
+          >
+            <span className={`text-[11px] ${isSeeding ? 'animate-spin' : ''}`}>🔄</span>
+            <span className="hidden sm:inline">{isSeeding ? 'Restoring...' : 'Restore Demo'}</span>
+          </button>
+        )}
+
         {/* Connect Gmail Action */}
         <button
           onClick={onOpenGmailConnect}
