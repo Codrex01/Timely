@@ -10,7 +10,7 @@ import {
   AlertCircle,
   Loader2,
   FileUp,
-  ArrowRight
+  LogIn
 } from 'lucide-react';
 import { StudentProfile, SampleEmailNotice } from '@/types';
 
@@ -42,6 +42,8 @@ export const IngestionModal: React.FC<IngestionModalProps> = ({
   // Email Scan State
   const [emailList, setEmailList] = useState<SampleEmailNotice[]>([]);
   const [selectedEmailIds, setSelectedEmailIds] = useState<string[]>([]);
+  const [isRealConnected, setIsRealConnected] = useState<boolean>(false);
+  const [connectedAccountName, setConnectedAccountName] = useState<string>('');
   const [isLoadingEmails, setIsLoadingEmails] = useState(false);
 
   // Processing State
@@ -61,7 +63,9 @@ export const IngestionModal: React.FC<IngestionModalProps> = ({
       const data = await res.json();
       if (data.emails) {
         setEmailList(data.emails);
-        setSelectedEmailIds(data.emails.filter((e: SampleEmailNotice) => e.unread).map((e: SampleEmailNotice) => e.id));
+        setIsRealConnected(!!data.isRealGmailConnected);
+        setConnectedAccountName(data.connectedAccount || '');
+        setSelectedEmailIds(data.emails.map((e: SampleEmailNotice) => e.id));
       }
     } catch (err) {
       console.error('Error loading inbox:', err);
@@ -71,6 +75,10 @@ export const IngestionModal: React.FC<IngestionModalProps> = ({
   };
 
   if (!isOpen) return null;
+
+  const handleConnectRealGoogle = () => {
+    window.location.href = '/api/auth/google';
+  };
 
   const handlePasteSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -418,13 +426,26 @@ export const IngestionModal: React.FC<IngestionModalProps> = ({
                     M
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-[#F2F0EA]">{activeStudent?.email}</p>
-                    <p className="text-[10px] text-[#A6A29A]">{emailList.length} campus emails discovered</p>
+                    <p className="text-xs font-semibold text-[#F2F0EA]">{connectedAccountName || activeStudent?.email}</p>
+                    <p className="text-[10px] text-[#A6A29A]">
+                      {isRealConnected ? 'Live Gmail OAuth Active' : 'Pre-loaded Demo Inbox (Click button to connect real account)'}
+                    </p>
                   </div>
                 </div>
-                <span className="text-[10px] bg-[#0B6E4F]/15 text-[#4ADE80] border border-[#0B6E4F]/30 px-2 py-0.5 rounded font-medium">
-                  Connected
-                </span>
+
+                {!isRealConnected ? (
+                  <button
+                    onClick={handleConnectRealGoogle}
+                    className="flex items-center space-x-1.5 px-3 py-1.5 bg-[#24221E] hover:bg-[#2D2A25] border border-[#2B2924] hover:border-[#FF5A1F] text-[#F2F0EA] rounded-[6px] text-xs font-medium transition-colors"
+                  >
+                    <LogIn className="w-3.5 h-3.5 text-[#FF5A1F]" />
+                    <span>Sign in with Google</span>
+                  </button>
+                ) : (
+                  <span className="text-[10px] bg-[#0B6E4F]/15 text-[#4ADE80] border border-[#0B6E4F]/30 px-2 py-0.5 rounded font-medium">
+                    Google OAuth Synced
+                  </span>
+                )}
               </div>
 
               {isLoadingEmails ? (

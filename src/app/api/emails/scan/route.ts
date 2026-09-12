@@ -3,12 +3,76 @@ import { prisma } from '@/lib/prisma';
 import { MOCK_EMAIL_INBOX } from '@/lib/sampleNotices';
 import { extractNoticeStructure } from '@/lib/groq';
 import { calculateRelevanceScore } from '@/lib/relevance';
-import { StudentProfile } from '@/types';
+import { StudentProfile, SampleEmailNotice } from '@/types';
+import { google } from 'googleapis';
+import { cookies } from 'next/headers';
 
 export async function GET(request: NextRequest) {
-  // Returns list of emails in the connected inbox
+  const cookieStore = cookies();
+  const accessToken = cookieStore.get('gmail_access_token')?.value;
+  const userEmail = cookieStore.get('gmail_user_email')?.value;
+
+  // If real Gmail is connected via OAuth
+  if (accessToken) {
+    try {
+      const auth = new google.auth.OAuth2(
+        process.env.GOOGLE_CLIENT_ID,
+        process.env.GOOGLE_CLIENT_SECRET
+      );
+      auth.setCredentials({ access_token: accessToken });
+
+      const gmail = google.gmail({ version: 'v1', auth });
+
+      // Search real emails with notice-related query keywords
+      const q = 'subject:(notice OR circular OR placement OR exam OR deadline OR scholarship OR fee OR hackathon)';
+      const listRes = await gmail.users.messages.list({
+        userId: 'me',
+        q: q,
+        maxResults: 8,
+      });
+
+      const messageList = listRes.data.messages || [];
+      const realEmails: SampleEmailNotice[] = [];
+
+      for (const msg of messageList) {
+        if (!msg.id) continue;
+        const msgDetail = await gmail.users.messages.get({
+          userId: 'me',
+          id: msg.id,
+          format: 'snippet',
+        });
+
+        const headers = msgDetail.data.payload?.headers || [];
+        const subject = headers.find((h) => h.name?.toLowerCase() === 'subject')?.value || 'Campus Circular';
+        const from = headers.find((h) => h.name?.toLowerCase() === 'from')?.value || 'administration@campus.edu';
+        const date = headers.find((h) => h.name?.toLowerCase() === 'date')?.value || 'Recent';
+
+        realEmails.push({
+          id: msg.id,
+          sender: from,
+          subject: subject,
+          receivedAt: new Date(date).toLocaleDateString() || 'Today',
+          body: msgDetail.data.snippet || subject,
+          tag: 'Real Gmail',
+          unread: true,
+        });
+      }
+
+      return NextResponse.json({
+        isRealGmailConnected: true,
+        connectedAccount: userEmail || 'Connected Gmail User',
+        inboxCount: realEmails.length,
+        emails: realEmails.length > 0 ? realEmails : MOCK_EMAIL_INBOX,
+      });
+    } catch (err: any) {
+      console.warn('Could not pull live Gmail messages (token may be expired):', err.message);
+    }
+  }
+
+  // Fallback to Demo Inbox
   return NextResponse.json({
-    connectedAccount: 'aarav.sharma@campus.edu',
+    isRealGmailConnected: false,
+    connectedAccount: 'aarav.sharma@campus.edu (Demo Mode)',
     inboxCount: MOCK_EMAIL_INBOX.length,
     emails: MOCK_EMAIL_INBOX,
   });
@@ -18,6 +82,9 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { emailIds, studentId } = body;
+
+    const cookieStore = cookies();
+    const accessToken = cookieStore.get('gmail_access_token')?.value;
 
     // Fetch active student
     let student = null;
@@ -46,13 +113,55 @@ export async function POST(request: NextRequest) {
       };
     }
 
-    const targetEmails = Array.isArray(emailIds) && emailIds.length > 0
-      ? MOCK_EMAIL_INBOX.filter((e) => emailIds.includes(e.id))
-      : MOCK_EMAIL_INBOX;
+    let emailsToProcess: { sender: string; subject: string; body: string }[] = [];
+
+    // If real Gmail access token is active
+    if (accessToken && Array.isArray(emailIds) && emailIds.length > 0) {
+      try {
+        const auth = new google.auth.OAuth2(
+          process.env.GOOGLE_CLIENT_ID,
+          process.env.GOOGLE_CLIENT_SECRET
+        );
+        auth.setCredentials({ access_token: accessToken });
+        const gmail = google.gmail({ version: 'v1', auth });
+
+        for (const id of emailIds) {
+          try {
+            const detail = await gmail.users.messages.get({
+              userId: 'me',
+              id: id,
+              format: 'snippet',
+            });
+            const headers = detail.data.payload?.headers || [];
+            const subject = headers.find((h) => h.name?.toLowerCase() === 'subject')?.value || 'Notice';
+            const from = headers.find((h) => h.name?.toLowerCase() === 'from')?.value || 'campus@edu';
+            const body = detail.data.snippet || subject;
+
+            emailsToProcess.push({ sender: from, subject, body });
+          } catch {
+            // fallback if id not in real gmail
+          }
+        }
+      } catch (err) {
+        console.warn('Error fetching individual Gmail messages:', err);
+      }
+    }
+
+    // Fallback to mock inbox selection if real pull was empty
+    if (emailsToProcess.length === 0) {
+      const targetMock = Array.isArray(emailIds) && emailIds.length > 0
+        ? MOCK_EMAIL_INBOX.filter((e) => emailIds.includes(e.id))
+        : MOCK_EMAIL_INBOX;
+      emailsToProcess = targetMock.map((e) => ({
+        sender: e.sender,
+        subject: e.subject,
+        body: e.body,
+      }));
+    }
 
     const importedTasks = [];
 
-    for (const email of targetEmails) {
+    for (const email of emailsToProcess) {
       const extracted = await extractNoticeStructure(
         `From: ${email.sender}\nSubject: ${email.subject}\n\n${email.body}`
       );
@@ -106,13 +215,13 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: `Scanned and ingested ${importedTasks.length} email notices with Groq AI`,
+      message: `Extracted ${importedTasks.length} actionable tasks with Groq AI`,
       tasks: importedTasks,
     });
   } catch (error) {
-    console.error('Error in /api/emails/scan:', error);
+    console.error('Error in /api/emails/scan POST:', error);
     return NextResponse.json(
-      { error: 'Failed to scan inbox emails' },
+      { error: 'Failed to process email notice batch' },
       { status: 500 }
     );
   }
