@@ -12,7 +12,8 @@ import {
   User,
   RotateCcw,
   Award,
-  Command
+  Command,
+  Newspaper
 } from 'lucide-react';
 import { StudentProfile } from '@/types';
 
@@ -23,6 +24,7 @@ interface SidebarProps {
   onOpenIngest: () => void;
   onOpenChat: () => void;
   onOpenProfile: () => void;
+  onOpenDigest: () => void;
   onResetSeed: () => void;
   isSeeding: boolean;
   urgentCount: number;
@@ -35,6 +37,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenIngest,
   onOpenChat,
   onOpenProfile,
+  onOpenDigest,
   onResetSeed,
   isSeeding,
   urgentCount,
@@ -72,6 +75,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <Plus className="w-3.5 h-3.5" />
             <span>Ingest Notice</span>
           </button>
+
+          <button
+            onClick={onOpenDigest}
+            className="w-full flex items-center justify-between py-1.5 px-3 bg-[#1C1B17] hover:bg-[#24221E] text-[#F2F0EA] border border-[#2B2924] hover:border-[#3D3A33] rounded-[6px] text-xs font-medium transition-colors"
+          >
+            <div className="flex items-center space-x-2">
+              <Newspaper className="w-3.5 h-3.5 text-[#FF5A1F]" />
+              <span>Weekly Briefing</span>
+            </div>
+            <span className="text-[9px] bg-[#24221E] border border-[#2B2924] text-[#A6A29A] px-1 py-0.2 rounded font-medium">
+              AI
+            </span>
+          </button>
+
           <button
             onClick={onOpenChat}
             className="w-full flex items-center justify-between py-1.5 px-3 bg-[#1C1B17] hover:bg-[#24221E] text-[#F2F0EA] border border-[#2B2924] hover:border-[#3D3A33] rounded-[6px] text-xs font-medium transition-colors"
@@ -124,7 +141,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Bottom Profile & System Controls */}
       <div className="p-3 border-t border-[#2B2924] space-y-2">
-        {/* Active Student Card */}
         {activeStudent && (
           <button
             onClick={onOpenProfile}
@@ -145,7 +161,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
         )}
 
-        {/* Demo Seed Reset Button */}
         <button
           onClick={onResetSeed}
           disabled={isSeeding}

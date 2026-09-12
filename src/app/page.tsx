@@ -10,8 +10,9 @@ import { IngestionModal } from '@/components/IngestionModal';
 import { ChatDrawer } from '@/components/ChatDrawer';
 import { ProfileModal } from '@/components/ProfileModal';
 import { NoticeDetailModal } from '@/components/NoticeDetailModal';
+import { DigestModal } from '@/components/DigestModal';
 import { StudentProfile, ExtractedTaskItem, TaskStatus } from '@/types';
-import { MessageSquareText } from 'lucide-react';
+import { MessageSquareText, Newspaper } from 'lucide-react';
 
 export default function SmartCampusDashboard() {
   const [currentTab, setCurrentTab] = useState<string>('all');
@@ -28,6 +29,7 @@ export default function SmartCampusDashboard() {
   const [ingestInitialMode, setIngestInitialMode] = useState<'paste' | 'upload' | 'email'>('paste');
   const [isChatDrawerOpen, setIsChatDrawerOpen] = useState<boolean>(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState<boolean>(false);
+  const [isDigestModalOpen, setIsDigestModalOpen] = useState<boolean>(false);
   const [inspectingTask, setInspectingTask] = useState<ExtractedTaskItem | null>(null);
 
   const loadDashboardData = useCallback(async () => {
@@ -155,6 +157,7 @@ export default function SmartCampusDashboard() {
         }}
         onOpenChat={() => setIsChatDrawerOpen(true)}
         onOpenProfile={() => setIsProfileModalOpen(true)}
+        onOpenDigest={() => setIsDigestModalOpen(true)}
         onResetSeed={handleResetSeed}
         isSeeding={isSeeding}
         urgentCount={urgentTasksCount}
@@ -201,10 +204,18 @@ export default function SmartCampusDashboard() {
 
             <div className="flex items-center space-x-2">
               <button
-                onClick={() => setIsChatDrawerOpen(true)}
+                onClick={() => setIsDigestModalOpen(true)}
                 className="flex items-center space-x-1.5 px-3 py-1.5 bg-[#1C1B17] hover:bg-[#24221E] border border-[#2B2924] hover:border-[#3D3A33] rounded-[6px] text-xs font-medium text-[#F2F0EA] transition-colors"
               >
-                <MessageSquareText className="w-3.5 h-3.5 text-[#A6A29A]" />
+                <Newspaper className="w-3.5 h-3.5 text-[#FF5A1F]" />
+                <span>Weekly Action Briefing</span>
+              </button>
+
+              <button
+                onClick={() => setIsChatDrawerOpen(true)}
+                className="flex items-center space-x-1.5 px-3 py-1.5 bg-[#FF5A1F] hover:bg-[#E04B14] rounded-[6px] text-xs font-medium text-white transition-colors"
+              >
+                <MessageSquareText className="w-3.5 h-3.5" />
                 <span>Ask Assistant</span>
               </button>
             </div>
@@ -258,6 +269,12 @@ export default function SmartCampusDashboard() {
         activeStudent={activeStudent}
         onNoticeIngested={loadDashboardData}
         initialMode={ingestInitialMode}
+      />
+
+      <DigestModal
+        isOpen={isDigestModalOpen}
+        onClose={() => setIsDigestModalOpen(false)}
+        activeStudent={activeStudent}
       />
 
       <ChatDrawer

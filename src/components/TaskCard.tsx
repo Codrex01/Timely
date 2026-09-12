@@ -14,9 +14,12 @@ import {
   Square,
   FileText,
   Mail,
-  Upload
+  Upload,
+  CalendarPlus,
+  Download
 } from 'lucide-react';
 import { ExtractedTaskItem, TaskStatus } from '@/types';
+import { generateGoogleCalendarUrl, downloadIcsFile } from '@/lib/calendarExport';
 
 interface TaskCardProps {
   task: ExtractedTaskItem;
@@ -30,6 +33,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   onViewNotice,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showCalendarMenu, setShowCalendarMenu] = useState(false);
   const [checkedActions, setCheckedActions] = useState<Record<number, boolean>>({});
 
   const toggleActionCheck = (index: number) => {
@@ -39,7 +43,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     }));
   };
 
-  // Urgency configuration (solid colors only, NO gradients)
   const urgencyConfig = {
     CRITICAL: {
       borderLeft: 'border-l-[#D9402B]',
@@ -67,7 +70,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     label: 'Standard',
   };
 
-  // Category indicator dots
   const categoryDotColor = {
     PLACEMENT: '#FF5A1F',
     ACADEMIC: '#3B82F6',
@@ -85,14 +87,13 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 
   return (
     <div
-      className={`saas-card border-l-4 ${urgencyConfig.borderLeft} p-4 transition-colors ${
+      className={`saas-card border-l-4 ${urgencyConfig.borderLeft} p-4 transition-colors relative ${
         isCompleted ? 'opacity-50 bg-[#161512]' : 'bg-[#1C1B17]'
       }`}
     >
       {/* Header Row */}
       <div className="flex items-start justify-between gap-3 mb-2">
         <div className="flex flex-wrap items-center gap-2">
-          {/* Category with dot */}
           <div className="inline-flex items-center space-x-1.5 px-2 py-0.5 rounded-[4px] bg-[#24221E] border border-[#2B2924] text-[10px] font-medium text-[#F2F0EA]">
             <span
               className="w-1.5 h-1.5 rounded-full"
@@ -101,12 +102,10 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             <span>{task.category}</span>
           </div>
 
-          {/* Urgency Badge */}
           <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-[4px] border ${urgencyConfig.badge}`}>
             {urgencyConfig.label}
           </span>
 
-          {/* Relevance Alignment */}
           <span
             className={`text-[10px] font-medium px-2 py-0.5 rounded-[4px] border ${
               task.relevanceScore >= 80
@@ -123,6 +122,42 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           <div className="flex items-center space-x-1">
             <SourceIcon className="w-3 h-3 text-[#A6A29A]" />
             <span className="capitalize">{task.notice?.source?.toLowerCase() || 'Notice'}</span>
+          </div>
+
+          {/* Calendar Dropdown Trigger */}
+          <div className="relative">
+            <button
+              onClick={() => setShowCalendarMenu(!showCalendarMenu)}
+              className="p-1 text-[#A6A29A] hover:text-[#F2F0EA] hover:bg-[#24221E] rounded transition-colors"
+              title="Add deadline to Calendar"
+            >
+              <CalendarPlus className="w-3.5 h-3.5" />
+            </button>
+
+            {showCalendarMenu && (
+              <div className="absolute right-0 top-6 w-44 bg-[#1C1B17] border border-[#2B2924] rounded-[6px] shadow-xl p-1 z-30 space-y-0.5">
+                <a
+                  href={generateGoogleCalendarUrl(task)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setShowCalendarMenu(false)}
+                  className="flex items-center space-x-1.5 px-2 py-1.5 text-[11px] text-[#F2F0EA] hover:bg-[#24221E] rounded transition-colors"
+                >
+                  <Calendar className="w-3 h-3 text-[#FF5A1F]" />
+                  <span>Google Calendar</span>
+                </a>
+                <button
+                  onClick={() => {
+                    downloadIcsFile(task);
+                    setShowCalendarMenu(false);
+                  }}
+                  className="w-full text-left flex items-center space-x-1.5 px-2 py-1.5 text-[11px] text-[#F2F0EA] hover:bg-[#24221E] rounded transition-colors"
+                >
+                  <Download className="w-3 h-3 text-[#A6A29A]" />
+                  <span>Download .ics File</span>
+                </button>
+              </div>
+            )}
           </div>
 
           <button
