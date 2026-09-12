@@ -16,10 +16,14 @@ import {
   Mail,
   Upload,
   CalendarPlus,
-  Download
+  Download,
+  Bell,
+  Clock,
+  Sparkles
 } from 'lucide-react';
 import { ExtractedTaskItem, TaskStatus } from '@/types';
 import { generateGoogleCalendarUrl, downloadIcsFile } from '@/lib/calendarExport';
+import { scheduleTaskReminder, getScheduledReminders } from '@/lib/notifications';
 
 interface TaskCardProps {
   task: ExtractedTaskItem;
@@ -34,7 +38,23 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showCalendarMenu, setShowCalendarMenu] = useState(false);
+  const [showReminderMenu, setShowReminderMenu] = useState(false);
+  const [reminderBadge, setReminderBadge] = useState<string | null>(null);
   const [checkedActions, setCheckedActions] = useState<Record<number, boolean>>({});
+
+  React.useEffect(() => {
+    const reminders = getScheduledReminders();
+    const existing = reminders.find((r) => r.taskId === task.id);
+    if (existing) {
+      setReminderBadge(existing.reminderLabel);
+    }
+  }, [task.id]);
+
+  const handleSetReminder = (type: 'INSTANT_TEST' | '1_DAY_BEFORE' | '2_DAYS_BEFORE' | 'DAY_OF') => {
+    const reminder = scheduleTaskReminder(task, type);
+    setReminderBadge(reminder.reminderLabel);
+    setShowReminderMenu(false);
+  };
 
   const toggleActionCheck = (index: number) => {
     setCheckedActions((prev) => ({
@@ -127,7 +147,10 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           {/* Calendar Dropdown Trigger */}
           <div className="relative">
             <button
-              onClick={() => setShowCalendarMenu(!showCalendarMenu)}
+              onClick={() => {
+                setShowCalendarMenu(!showCalendarMenu);
+                setShowReminderMenu(false);
+              }}
               className="p-1 text-[#A6A29A] hover:text-[#F2F0EA] hover:bg-[#24221E] rounded transition-colors"
               title="Add deadline to Calendar"
             >
@@ -155,6 +178,76 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                 >
                   <Download className="w-3 h-3 text-[#A6A29A]" />
                   <span>Download .ics File</span>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Reminder / Notification Dropdown Trigger */}
+          <div className="relative">
+            <button
+              onClick={() => {
+                setShowReminderMenu(!showReminderMenu);
+                setShowCalendarMenu(false);
+              }}
+              className={`p-1 rounded transition-colors ${
+                reminderBadge
+                  ? 'text-[#FF5A1F] bg-[#FF5A1F]/15 border border-[#FF5A1F]/30'
+                  : 'text-[#A6A29A] hover:text-[#F2F0EA] hover:bg-[#24221E]'
+              }`}
+              title="Set deadline alert / reminder"
+            >
+              <Bell className="w-3.5 h-3.5" />
+            </button>
+
+            {showReminderMenu && (
+              <div className="absolute right-0 top-6 w-56 bg-[#1C1B17] border border-[#2B2924] rounded-[6px] shadow-2xl p-1.5 z-30 space-y-1 text-xs">
+                <div className="px-2 py-1 text-[10px] font-semibold text-[#A6A29A] uppercase tracking-wider border-b border-[#2B2924]">
+                  Schedule Alert Sender
+                </div>
+
+                <button
+                  onClick={() => handleSetReminder('INSTANT_TEST')}
+                  className="w-full text-left flex items-center space-x-2 px-2 py-1.5 rounded hover:bg-[#24221E] text-[#FF5A1F] transition-colors"
+                >
+                  <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                  <div>
+                    <div className="font-semibold text-[11px]">⚡ Instant Test Alert</div>
+                    <div className="text-[9px] text-[#A6A29A]">Fires live demo notification now</div>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => handleSetReminder('1_DAY_BEFORE')}
+                  className="w-full text-left flex items-center space-x-2 px-2 py-1.5 rounded hover:bg-[#24221E] text-[#F2F0EA] transition-colors"
+                >
+                  <Clock className="w-3.5 h-3.5 shrink-0 text-[#A6A29A]" />
+                  <div>
+                    <div className="font-medium text-[11px]">1 Day Before Deadline</div>
+                    <div className="text-[9px] text-[#6E6A62]">Auto-reminder 24h prior</div>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => handleSetReminder('2_DAYS_BEFORE')}
+                  className="w-full text-left flex items-center space-x-2 px-2 py-1.5 rounded hover:bg-[#24221E] text-[#F2F0EA] transition-colors"
+                >
+                  <Clock className="w-3.5 h-3.5 shrink-0 text-[#A6A29A]" />
+                  <div>
+                    <div className="font-medium text-[11px]">2 Days Before Deadline</div>
+                    <div className="text-[9px] text-[#6E6A62]">Early preparation alert</div>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => handleSetReminder('DAY_OF')}
+                  className="w-full text-left flex items-center space-x-2 px-2 py-1.5 rounded hover:bg-[#24221E] text-[#F2F0EA] transition-colors"
+                >
+                  <Clock className="w-3.5 h-3.5 shrink-0 text-[#A6A29A]" />
+                  <div>
+                    <div className="font-medium text-[11px]">On Deadline Day</div>
+                    <div className="text-[9px] text-[#6E6A62]">Morning 8:00 AM alert</div>
+                  </div>
                 </button>
               </div>
             )}

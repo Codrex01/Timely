@@ -1,8 +1,7 @@
-'use client';
-
 import React from 'react';
 import { Search, Mail, Plus, AlertCircle, CheckCircle2, Lock } from 'lucide-react';
 import { StudentProfile } from '@/types';
+import { NotificationDropdown } from './NotificationDropdown';
 
 interface TopNavProps {
   searchQuery: string;
@@ -15,6 +14,7 @@ interface TopNavProps {
   onResetSeed?: () => void;
   isSeeding?: boolean;
   onLockSession?: () => void;
+  onSelectTask?: (taskId: string) => void;
   urgentCount: number;
   completedCount: number;
 }
@@ -30,6 +30,7 @@ export const TopNav: React.FC<TopNavProps> = ({
   onResetSeed,
   isSeeding,
   onLockSession,
+  onSelectTask,
   urgentCount,
   completedCount,
 }) => {
@@ -70,6 +71,9 @@ export const TopNav: React.FC<TopNavProps> = ({
 
       {/* Right Actions */}
       <div className="flex items-center space-x-2">
+        {/* Notification Bell Dropdown */}
+        <NotificationDropdown onSelectTask={onSelectTask} />
+
         {/* Reset Demo Seed Button */}
         {onResetSeed && (
           <button

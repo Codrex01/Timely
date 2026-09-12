@@ -12,6 +12,7 @@ import { ProfileModal } from '@/components/ProfileModal';
 import { NoticeDetailModal } from '@/components/NoticeDetailModal';
 import { DigestModal } from '@/components/DigestModal';
 import { LockScreen } from '@/components/LockScreen';
+import { NotificationToast } from '@/components/NotificationToast';
 import { StudentProfile, ExtractedTaskItem, TaskStatus } from '@/types';
 import { MessageSquareText, Newspaper } from 'lucide-react';
 
@@ -205,6 +206,10 @@ export default function SmartCampusDashboard() {
           onResetSeed={handleResetSeed}
           isSeeding={isSeeding}
           onLockSession={handleLockSession}
+          onSelectTask={(taskId) => {
+            const t = tasks.find((item) => item.id === taskId);
+            if (t) setInspectingTask(t);
+          }}
           urgentCount={urgentTasksCount}
           completedCount={completedTasksCount}
         />
@@ -326,6 +331,8 @@ export default function SmartCampusDashboard() {
         task={inspectingTask}
         onClose={() => setInspectingTask(null)}
       />
+
+      <NotificationToast />
     </div>
   );
 }
