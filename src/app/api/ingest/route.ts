@@ -7,7 +7,8 @@ import { StudentProfile } from '@/types';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { rawText, title, sourceSender, source = 'PASTE', studentId } = body;
+    const { rawText, title, sourceSender, source = 'PASTE', studentId, studentProfileId } = body;
+    const activeStudentId = studentId || studentProfileId;
 
     if (!rawText || rawText.trim().length < 10) {
       return NextResponse.json(
@@ -18,8 +19,8 @@ export async function POST(request: NextRequest) {
 
     // 1. Fetch active student for relevance scoring
     let student = null;
-    if (studentId) {
-      student = await prisma.student.findUnique({ where: { id: studentId } });
+    if (activeStudentId) {
+      student = await prisma.student.findUnique({ where: { id: activeStudentId } });
     }
     if (!student) {
       student = await prisma.student.findFirst();

@@ -43,7 +43,8 @@ export async function POST(request: NextRequest) {
     await ensureDatabaseSeeded();
 
     const body = await request.json();
-    const { query, studentId } = body;
+    const { query, studentId, studentProfileId } = body;
+    const activeStudentId = studentId || studentProfileId;
 
     if (!query || query.trim().length === 0) {
       return NextResponse.json({ error: 'Query cannot be empty' }, { status: 400 });
@@ -51,8 +52,8 @@ export async function POST(request: NextRequest) {
 
     // 1. Fetch Student Profile with fallback
     let student = null;
-    if (studentId) {
-      student = await prisma.student.findUnique({ where: { id: studentId } });
+    if (activeStudentId) {
+      student = await prisma.student.findUnique({ where: { id: activeStudentId } });
     }
     if (!student) {
       student = await prisma.student.findFirst();

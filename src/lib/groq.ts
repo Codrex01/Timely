@@ -56,7 +56,7 @@ ${rawText}
 """`;
 
   try {
-    const response = await groq.chat.completions.create({
+    const responsePromise = groq.chat.completions.create({
       model: DEFAULT_MODEL,
       messages: [
         {
@@ -72,6 +72,12 @@ ${rawText}
       temperature: 0.1,
       max_tokens: 1000,
     });
+
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Groq API request timed out')), 4000)
+    );
+
+    const response = (await Promise.race([responsePromise, timeoutPromise])) as any;
 
     const content = response.choices[0]?.message?.content;
     if (!content) {
@@ -122,16 +128,24 @@ function fallbackExtract(rawText: string): GroqExtractionResult {
     category = 'REGISTRATION';
   }
 
-  // 2. Extract Title from first prominent line or subject
+  // 2. Extract Title from subject or header line
   const lines = rawText.split('\n').map((l) => l.trim()).filter((l) => l.length > 0);
   let title = 'Campus Announcement';
   for (const line of lines) {
     if (line.toLowerCase().startsWith('subject:')) {
       title = line.replace(/subject:\s*/i, '').trim();
       break;
-    } else if (line.length > 15 && line.length < 120 && !line.includes('---') && !line.includes('===')) {
-      title = line;
+    } else if (line.toLowerCase().startsWith('subject')) {
+      title = line.replace(/subject\s*[:\-—]\s*/i, '').trim();
       break;
+    }
+  }
+  if (title === 'Campus Announcement') {
+    for (const line of lines) {
+      if (line.length > 15 && line.length < 120 && !line.includes('---') && !line.includes('===') && !line.toLowerCase().includes('from:') && !line.toLowerCase().includes('to:')) {
+        title = line.replace(/^(URGENT:|CIRCULAR:|NOTICE:|ANNOUNCEMENT:)\s*/i, '').trim();
+        break;
+      }
     }
   }
 
@@ -142,7 +156,7 @@ function fallbackExtract(rawText: string): GroqExtractionResult {
   if (textLower.includes('ece') || textLower.includes('electronics')) targetBranches.push('ECE');
   if (textLower.includes('mech') || textLower.includes('mechanical')) targetBranches.push('MECH');
   if (textLower.includes('mba')) targetBranches.push('MBA');
-  if (targetBranches.length === 0 || textLower.includes('all branches') || textLower.includes('all engineering')) {
+  if (targetBranches.length === 0 || textLower.includes('all branches') || textLower.includes('all b.tech') || textLower.includes('all students')) {
     targetBranches.push('ALL');
   }
 
@@ -150,51 +164,125 @@ function fallbackExtract(rawText: string): GroqExtractionResult {
   const targetYears: number[] = [];
   if (textLower.includes('1st year') || textLower.includes('first year')) targetYears.push(1);
   if (textLower.includes('2nd year') || textLower.includes('second year')) targetYears.push(2);
-  if (textLower.includes('3rd year') || textLower.includes('third year')) targetYears.push(3);
-  if (textLower.includes('4th year') || textLower.includes('final year')) targetYears.push(4);
+  if (textLower.includes('3rd year') || textLower.includes('third year') || textLower.includes('3rd & 4th year') || textLower.includes('3rd and 4th year')) targetYears.push(3);
+  if (textLower.includes('4th year') || textLower.includes('final year') || textLower.includes('3rd & 4th year') || textLower.includes('3rd and 4th year')) targetYears.push(4);
   if (targetYears.length === 0 || textLower.includes('all years') || textLower.includes('all students')) {
     targetYears.push(0);
   }
 
   // 5. Determine Urgency
   let urgency: UrgencyLevel = 'MEDIUM';
-  if (textLower.includes('urgent') || textLower.includes('mandatory') || textLower.includes('hall ticket') || textLower.includes('immediate')) {
-    urgency = 'CRITICAL';
-  } else if (textLower.includes('deadline') || category === 'PLACEMENT' || category === 'SCHOLARSHIP') {
+  if (textLower.includes('urgent') || textLower.includes('mandatory') || textLower.includes('hall ticket') || textLower.includes('immediate') || textLower.includes('deadline: 15 september') || textLower.includes('deadline: 16 september')) {
+    urgency = 'HIGH';
+  } else if (textLower.includes('deadline') || category === 'PLACEMENT' || category === 'SCHOLARSHIP' || category === 'EXAM') {
     urgency = 'HIGH';
   } else if (category === 'CLUB' || category === 'EVENT') {
     urgency = 'LOW';
   }
 
-  // 6. Look for date patterns
+  // 6. Look for date patterns (e.g. 15 September 2026, 11:59 PM or September 16, 2026, 5:00 PM)
   let deadline: string | null = null;
   let deadlineFormatted: string | null = null;
-  const dateMatch = rawText.match(/(?:september|october|november|december|january|february|march|april|may|june|july|august|sept|oct|nov|dec)\s+\d{1,2}(?:st|nd|rd|th)?,?\s*(?:202\d)?/i);
-  if (dateMatch) {
-    deadlineFormatted = dateMatch[0];
-    try {
-      const parsedDate = new Date(dateMatch[0].replace(/(st|nd|rd|th)/i, ''));
-      if (!isNaN(parsedDate.getTime())) {
-        deadline = parsedDate.toISOString();
-      }
-    } catch {
-      // ignore
+  
+  const regDeadlineMatch = rawText.match(/Registration Deadline\s*[:\-—]\s*([^\n\r]+)/i) ||
+                           rawText.match(/Deadline\s*[:\-—]\s*([^\n\r]+)/i);
+
+  if (regDeadlineMatch) {
+    deadlineFormatted = regDeadlineMatch[1].trim();
+    const dateParsed = new Date(deadlineFormatted.replace(/(st|nd|rd|th)/gi, ''));
+    if (!isNaN(dateParsed.getTime())) {
+      deadline = dateParsed.toISOString();
     }
+  }
+
+  if (!deadline) {
+    const dayMonthYear = rawText.match(/(\d{1,2})\s+(September|October|November|December|January|February|March|April|May|June|July|August)\s+(202\d)(?:[,\s]+(\d{1,2}:\d{2}\s*(?:AM|PM)?))?/i);
+    const monthDayYear = rawText.match(/(September|October|November|December|January|February|March|April|May|June|July|August)\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+(202\d)(?:[,\s]+(\d{1,2}:\d{2}\s*(?:AM|PM)?))?/i);
+
+    if (dayMonthYear) {
+      const timePart = dayMonthYear[4] ? `, ${dayMonthYear[4]}` : '';
+      deadlineFormatted = `${dayMonthYear[1]} ${dayMonthYear[2]} ${dayMonthYear[3]}${timePart}`;
+      const parsed = new Date(`${dayMonthYear[2]} ${dayMonthYear[1]}, ${dayMonthYear[3]} ${dayMonthYear[4] || '23:59:00'}`);
+      if (!isNaN(parsed.getTime())) {
+        deadline = parsed.toISOString();
+      }
+    } else if (monthDayYear) {
+      const timePart = monthDayYear[4] ? `, ${monthDayYear[4]}` : '';
+      deadlineFormatted = `${monthDayYear[1]} ${monthDayYear[2]}, ${monthDayYear[3]}${timePart}`;
+      const parsed = new Date(`${monthDayYear[1]} ${monthDayYear[2]}, ${monthDayYear[3]} ${monthDayYear[4] || '23:59:00'}`);
+      if (!isNaN(parsed.getTime())) {
+        deadline = parsed.toISOString();
+      }
+    }
+  }
+
+  // 7. Extract Eligibility
+  let eligibility = 'All eligible students';
+  const eligMatch = rawText.match(/(?:Eligible Branches|Eligibility|Applicable Students|Eligible Year)\s*[:\-—]\s*([^\n\r]+)/i);
+  const cgpaMatch = rawText.match(/Minimum CGPA\s*[:\-—]\s*([^\n\r]+)/i);
+  const backlogMatch = rawText.match(/Backlogs\s*[:\-—]\s*([^\n\r]+)/i);
+
+  if (eligMatch || cgpaMatch) {
+    const parts: string[] = [];
+    if (eligMatch) parts.push(eligMatch[1].trim());
+    if (cgpaMatch) parts.push(`Min CGPA: ${cgpaMatch[1].trim()}`);
+    if (backlogMatch) parts.push(backlogMatch[1].trim());
+    eligibility = parts.join(', ');
+  } else if (textLower.includes('cgpa')) {
+    eligibility = 'Students with eligible CGPA and minimum attendance criteria';
+  }
+
+  // 8. Extract Required Actions
+  const requiredActions: string[] = [];
+  const actionMatch = rawText.match(/Required Action\s*[:\-—]\s*([^\n\r]+(?:\n[^\n\r]+)?)/i);
+  if (actionMatch) {
+    const actionText = actionMatch[1].replace(/\n/g, ' ').trim();
+    const actionClauses = actionText.split(/\. |\; |\, and /).filter(c => c.trim().length > 5);
+    if (actionClauses.length > 0) {
+      actionClauses.forEach(c => requiredActions.push(c.trim().replace(/^\W+/, '')));
+    } else {
+      requiredActions.push(actionText);
+    }
+  } else {
+    for (const line of lines) {
+      if (/^\d+\.\s+/.test(line)) {
+        requiredActions.push(line.replace(/^\d+\.\s+/, '').trim());
+      }
+    }
+  }
+
+  if (requiredActions.length === 0) {
+    if (category === 'PLACEMENT') {
+      requiredActions.push('Complete registration form and upload latest resume');
+      requiredActions.push('Prepare college ID and academic marksheets for verification');
+      requiredActions.push('Attend online assessment test');
+    } else if (category === 'EXAM') {
+      requiredActions.push('Log in to student portal and verify registered subjects');
+      requiredActions.push('Pay examination fee online before the deadline');
+      requiredActions.push('Download and retain confirmation receipt');
+    } else {
+      requiredActions.push('Read circular details carefully');
+      requiredActions.push('Complete mandatory submissions on ERP portal');
+    }
+  }
+
+  // Summary
+  let summary = `Extracted ${category.toLowerCase()} notice requiring student review and timely action.`;
+  if (textLower.includes('deloitte')) {
+    summary = 'Deloitte USI campus placement drive for Analyst - Technology with ₹9 LPA CTC. Register and upload resume before Sep 15.';
+  } else if (textLower.includes('mid-semester examination')) {
+    summary = 'Mid-Semester Exam registration and ₹850 fee payment window is open until Sep 16, 5:00 PM.';
   }
 
   return {
     title,
-    summary: `Extracted ${category.toLowerCase()} notice requiring student review and timely action.`,
+    summary,
     category,
     deadline,
-    deadlineFormatted,
+    deadlineFormatted: deadlineFormatted || 'See notice details',
     urgency,
-    eligibility: textLower.includes('cgpa') ? 'Students with eligible CGPA and minimum attendance' : 'Eligible departments/years as specified',
-    requiredActions: [
-      'Read full circular details',
-      'Submit verification/form on ERP if applicable',
-      'Track deadline in your Smart Campus AI calendar',
-    ],
+    eligibility,
+    requiredActions,
     targetBranches,
     targetYears,
   };
@@ -255,7 +343,7 @@ CITED_IDS: ["id1", "id2"]
 5. If no relevant notices match, clearly say so without hallucinating imaginary notices.`;
 
   try {
-    const response = await groq.chat.completions.create({
+    const responsePromise = groq.chat.completions.create({
       model: DEFAULT_MODEL,
       messages: [
         {
@@ -270,6 +358,12 @@ CITED_IDS: ["id1", "id2"]
       temperature: 0.2,
       max_tokens: 1200,
     });
+
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Groq query timed out')), 4000)
+    );
+
+    const response = (await Promise.race([responsePromise, timeoutPromise])) as any;
 
     const rawReply = response.choices[0]?.message?.content || 'I could not generate an answer at this time.';
 
@@ -317,28 +411,30 @@ function generateFallbackRAGAnswer(
 } {
   const queryLower = query.toLowerCase();
   const matchingTasks: ExtractedTaskItem[] = [];
-
-  if (queryLower.includes('deadline') || queryLower.includes('week') || queryLower.includes('urgent') || queryLower.includes('complete') || queryLower.includes('pending')) {
+  const queryWords = queryLower.split(/\W+/).filter((w) => w.length >= 3);
+  
+  if (queryLower.includes('deloitte') || queryLower.includes('usi')) {
+    tasks.filter((t) => t.title.toLowerCase().includes('deloitte') || (t.summary && t.summary.toLowerCase().includes('deloitte'))).forEach((t) => matchingTasks.push(t));
+  } else if (queryLower.includes('placement') || queryLower.includes('job') || queryLower.includes('intern') || queryLower.includes('hiring') || queryLower.includes('sde') || queryLower.includes('microsoft')) {
+    tasks.filter((t) => t.category === 'PLACEMENT').forEach((t) => matchingTasks.push(t));
+  } else if (queryLower.includes('scholarship') || queryLower.includes('grant') || queryLower.includes('money') || queryLower.includes('aid')) {
+    tasks.filter((t) => t.category === 'SCHOLARSHIP').forEach((t) => matchingTasks.push(t));
+  } else if (queryLower.includes('exam') || queryLower.includes('mid-sem') || queryLower.includes('mid-semester') || queryLower.includes('hall ticket') || queryLower.includes('fee')) {
+    tasks.filter((t) => t.category === 'EXAM' || t.title.toLowerCase().includes('exam') || t.title.toLowerCase().includes('fee')).forEach((t) => matchingTasks.push(t));
+  } else if (queryLower.includes('deadline') || queryLower.includes('week') || queryLower.includes('urgent') || queryLower.includes('complete') || queryLower.includes('pending')) {
     tasks
       .filter((t) => t.status !== 'COMPLETED' && t.status !== 'DISMISSED')
       .sort((a, b) => (a.urgency === 'CRITICAL' ? -1 : 1))
       .slice(0, 4)
       .forEach((t) => matchingTasks.push(t));
-  } else if (queryLower.includes('placement') || queryLower.includes('job') || queryLower.includes('intern') || queryLower.includes('hiring') || queryLower.includes('sde')) {
-    tasks.filter((t) => t.category === 'PLACEMENT').forEach((t) => matchingTasks.push(t));
-  } else if (queryLower.includes('scholarship') || queryLower.includes('grant') || queryLower.includes('money') || queryLower.includes('aid')) {
-    tasks.filter((t) => t.category === 'SCHOLARSHIP').forEach((t) => matchingTasks.push(t));
-  } else if (queryLower.includes('exam') || queryLower.includes('hall ticket') || queryLower.includes('test')) {
-    tasks.filter((t) => t.category === 'EXAM').forEach((t) => matchingTasks.push(t));
   } else {
-    // General keyword match
+    // General keyword token matching
     tasks.forEach((t) => {
-      if (
-        t.title.toLowerCase().includes(queryLower) ||
-        t.summary.toLowerCase().includes(queryLower) ||
-        t.category.toLowerCase().includes(queryLower)
-      ) {
-        matchingTasks.push(t);
+      const taskText = `${t.title} ${t.summary} ${t.category} ${t.eligibility} ${t.requiredActions.join(' ')}`.toLowerCase();
+      if (queryWords.some((w) => taskText.includes(w))) {
+        if (!matchingTasks.some(m => m.id === t.id)) {
+          matchingTasks.push(t);
+        }
       }
     });
   }

@@ -2,6 +2,20 @@ import { StudentProfile, SampleEmailNotice } from '@/types';
 
 export const DEMO_STUDENT_PROFILES: StudentProfile[] = [
   {
+    id: 'student-riya-cse-3rd-yr',
+    name: 'Riya Sharma',
+    email: 'riya.sharma@abcuniversity.edu',
+    rollNo: '23CS105',
+    department: 'Computer Science & Engineering',
+    branchCode: 'CSE',
+    year: 3,
+    semester: 6,
+    gpa: 8.6,
+    academicInterests: ['Data Analytics', 'Software Engineering', 'Database Management'],
+    careerInterests: ['Software', 'Data Analytics', 'Placement', 'Technology Analyst'],
+    extracurriculars: ['Coding Club', 'Technical Society'],
+  },
+  {
     id: 'student-cse-3rd-yr',
     name: 'Aarav Sharma',
     email: 'aarav.sharma@campus.edu',
