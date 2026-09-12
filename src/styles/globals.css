@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --canvas-bg: #161512;
+  --surface-bg: #1C1B17;
+  --surface-elevated: #24221E;
+  --surface-hover: #2D2A25;
+  --border-color: #2B2924;
+  --border-strong: #3D3A33;
+  --text-primary: #F2F0EA;
+  --text-secondary: #A6A29A;
+  --text-muted: #6E6A62;
+  --accent-brand: #FF5A1F;
+  --accent-brand-hover: #E04B14;
+}
+
+body {
+  background-color: var(--canvas-bg);
+  color: var(--text-primary);
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: #161512;
+}
+::-webkit-scrollbar-thumb {
+  background: #2B2924;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3D3A33;
+}
+
+@layer components {
+  .saas-card {
+    background-color: #1C1B17;
+    border: 1px solid #2B2924;
+    border-radius: 8px;
+  }
+  .saas-card:hover {
+    border-color: #3D3A33;
+  }
+  .saas-btn-primary {
+    background-color: #FF5A1F;
+    color: #FFFFFF;
+    font-weight: 500;
+    border-radius: 6px;
+    transition: background-color 0.12s ease;
+  }
+  .saas-btn-primary:hover {
+    background-color: #E04B14;
+  }
+  .saas-btn-secondary {
+    background-color: #24221E;
+    border: 1px solid #2B2924;
+    color: #F2F0EA;
+    border-radius: 6px;
+    transition: background-color 0.12s ease, border-color 0.12s ease;
+  }
+  .saas-btn-secondary:hover {
+    background-color: #2D2A25;
+    border-color: #3D3A33;
+  }
+}

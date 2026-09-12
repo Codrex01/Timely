@@ -1,0 +1,69 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Student {
+  id                  String   @id @default(uuid())
+  name                String
+  email               String   @unique
+  rollNo              String?
+  department          String   // e.g. "Computer Science & Engineering", "Mechanical Engineering", etc.
+  branchCode          String   // e.g. "CSE", "MECH", "ECE", "IT", "MBA"
+  year                Int      // e.g. 1, 2, 3, 4
+  semester            Int      @default(5)
+  gpa                 Float    @default(8.5)
+  academicInterests   String   // JSON string array e.g. ["Distributed Systems", "AI/ML"]
+  careerInterests     String   // JSON string array e.g. ["Product Management", "Software Engineering", "Core Tech"]
+  extracurriculars    String   // JSON string array e.g. ["Robotics Club", "Coding Club", "Hackathons"]
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  chatMessages        ChatMessage[]
+}
+
+model Notice {
+  id            String          @id @default(uuid())
+  title         String
+  rawContent    String
+  source        String          @default("PASTE") // PASTE, UPLOAD, EMAIL
+  sourceSender  String?         // e.g. "dean.academics@college.edu", "placement.cell@college.edu"
+  fileType      String?         // PDF, DOCX, TXT, EMAIL
+  receivedAt    DateTime        @default(now())
+  createdAt     DateTime        @default(now())
+  extractedTasks ExtractedTask[]
+}
+
+model ExtractedTask {
+  id                String    @id @default(uuid())
+  noticeId          String
+  notice            Notice    @relation(fields: [noticeId], references: [id], onDelete: Cascade)
+  title             String
+  summary           String
+  category          String    // ACADEMIC, PLACEMENT, EXAM, EVENT, SCHOLARSHIP, CLUB, REGISTRATION
+  deadline          DateTime?
+  deadlineFormatted String?   // e.g. "Oct 15, 2026 at 11:59 PM"
+  urgency           String    @default("MEDIUM") // CRITICAL, HIGH, MEDIUM, LOW
+  eligibility       String    @default("All Students")
+  requiredActions   String    // JSON string array e.g. ["Submit form via ERP", "Attach resume"]
+  targetBranches    String    // JSON string array e.g. ["CSE", "IT"] or ["ALL"]
+  targetYears       String    // JSON string array e.g. [3, 4] or [0] (all)
+  relevanceScore    Float     @default(0.0) // 0 to 100 calculated per active profile
+  status            String    @default("PENDING") // PENDING, COMPLETED, SNOOZED, DISMISSED
+  snoozedUntil      DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model ChatMessage {
+  id              String   @id @default(uuid())
+  studentId       String?
+  student         Student? @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  role            String   // "user" | "assistant"
+  content         String
+  citedNoticeIds  String   // JSON array of notice/task IDs
+  createdAt       DateTime @default(now())
+}
