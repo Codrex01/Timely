@@ -1,0 +1,98 @@
+================================================================================
+                    SMART CAMPUS AI (TIMELY) — TECH STACK & FLOW
+================================================================================
+
+1. PROJECT OVERVIEW
+--------------------------------------------------------------------------------
+Name: Smart Campus AI (Timely)
+Core Purpose: Ingests unstructured university notices, circulars, and emails,
+converting them into personalized, actionable, prioritized student tasks with
+Groq-powered LLM structured extraction and grounded RAG chat.
+
+Repository: https://github.com/Codrex01/Timely.git
+
+
+2. COMPLETE TECHNOLOGY STACK
+--------------------------------------------------------------------------------
+LAYER                   TECHNOLOGY               VERSION / SPEC
+--------------------------------------------------------------------------------
+Frontend Framework      Next.js (App Router)     14.2.23
+UI Library              React                    18.3.1
+Language                TypeScript               5.7.3
+Styling Engine          Tailwind CSS             3.4.17
+Design System           Warm Signal Palette      Strict Zero-Gradient SaaS
+Icons                   Lucide React             0.475.0
+Database ORM            Prisma ORM               5.22.0
+Database Engine         SQLite                   dev.db (Local Relational)
+AI LLM Inference        Groq Cloud SDK           0.15.0 (llama-3.1-8b-instant)
+LLM Extraction Mode     JSON Schema Mode         temperature=0.1
+Document Parsers        pdf-parse / mammoth      PDF & DOCX text extractors
+Email / OAuth 2.0       googleapis               Gmail REST API (read-only)
+
+
+3. COMPLETE END-TO-END DATA FLOW
+--------------------------------------------------------------------------------
+[STEP 1: INGESTION]
+   Student connects Gmail via OAuth 2.0 OR uploads PDF/DOCX OR pastes circular.
+
+[STEP 2: PRE-PROCESSING]
+   - Gmail: Regex filter matches campus notice patterns (subject/sender).
+   - Documents: pdf-parse / mammoth extracts raw text buffer in memory.
+
+[STEP 3: AI EXTRACTION (GROQ)]
+   - Raw text is dispatched to Groq API (llama-3.1-8b-instant).
+   - Strict JSON Schema output extracts:
+     * Title & Plain-language 1-line Summary
+     * Category (Academic, Placement, Exam, Scholarship, Event, Registration)
+     * Exact Deadlines (ISO timestamp & human formatted string)
+     * Urgency Badge (CRITICAL, HIGH, MEDIUM, LOW)
+     * Eligibility criteria string
+     * Action Steps checklist array
+     * Target Branches (e.g. ["CSE", "IT"]) & Target Years (e.g. [3, 4])
+
+[STEP 4: RELEVANCE & PERSONALIZATION SCORING]
+   - Computed in src/lib/relevance.ts against Active Student Profile:
+     * Branch Match: +25% | Direct Mismatch: -35%
+     * Year Match: +20% | Cross-Year Mismatch: -25%
+     * Career/Academic Interest keywords: up to +16%
+     * Placement eligibility boost for upper-year students: +15%
+   - Result: 0% to 100% personalized match score per student.
+
+[STEP 5: PERSISTENCE (SQLITE + PRISMA)]
+   - Upserts into 'Notice' table (raw content, sender, timestamp).
+   - Upserts into 'ExtractedTask' table (category, deadline, urgency, actions).
+
+[STEP 6: STUDENT PRESENTATION & INTERACTION]
+   - Real-time Task Cards with left urgency stripes and action checkboxes.
+   - 7-Day interactive Deadline Timeline with date-filter chips.
+   - 1-Click Student Persona Switcher (CSE 3rd Yr vs MECH 1st Yr vs ECE 4th Yr).
+
+[STEP 7: GROUNDED RAG QUERY (CMD+K)]
+   - Student asks natural-language query in chat drawer.
+   - Backend retrieves verified tasks + notice context for active student.
+   - Groq synthesizes grounded answer with exact citation chips.
+
+
+4. ENVIRONMENT VARIABLES CHECKLIST
+--------------------------------------------------------------------------------
+GROQ_API_KEY            -> Groq Cloud API key (from console.groq.com)
+GROQ_MODEL              -> llama-3.1-8b-instant
+DATABASE_URL            -> file:./dev.db
+GOOGLE_CLIENT_ID        -> Google Cloud OAuth 2.0 Web Client ID
+GOOGLE_CLIENT_SECRET    -> Google Cloud OAuth 2.0 Web Client Secret
+NEXT_PUBLIC_APP_URL     -> http://localhost:3000 (or Render production URL)
+
+
+5. SUMMARY OF KEY APIS
+--------------------------------------------------------------------------------
+GET/POST /api/profile       -> Get active student / Switch persona & batch rescore
+POST     /api/ingest        -> Ingest raw circular text & extract with Groq
+POST     /api/parse-file    -> Batch upload & parse PDF / DOCX / TXT notices
+GET/POST /api/emails/scan   -> Fetch inbox circulars & run AI extraction
+GET/PATCH/DELETE /api/tasks -> Filter, search, and update task status (Done/Snooze)
+GET/POST /api/chat          -> RAG grounded query endpoint with notice citations
+POST     /api/seed          -> Reset database to clean demo dataset
+GET      /api/auth/google   -> Redirect student to Google OAuth Consent screen
+GET      /api/auth/callback/google -> Handle OAuth token exchange & cookie session
+
+================================================================================
