@@ -1,0 +1,46 @@
+================================================================================
+TIMELY (SMART CAMPUS AI) — CYBERSECURITY & THREAT MODEL
+================================================================================
+
+This document outlines the security architecture, defenses, and threat model enforced across Timely.
+
+1. DEFENSE AGAINST COMMON WEB THREATS (OWASP TOP 10)
+--------------------------------------------------------------------------------
+A. Cross-Site Scripting (XSS):
+   - Strict Content Security Policy (CSP) headers enabled on all routes.
+   - React virtual DOM escaping by default.
+   - X-XSS-Protection: 1; mode=block enabled.
+
+B. Clickjacking & UI Redressing:
+   - X-Frame-Options: SAMEORIGIN explicitly prevents third-party sites from framing or embedding the application inside malicious iframes.
+   - CSP frame-ancestors 'self' directive.
+
+C. SQL / Query Injection:
+   - Fully parameterized queries via Prisma ORM. No raw SQL concatenation is performed anywhere in the application.
+
+D. MIME Confusion & Drive-By Exploits:
+   - X-Content-Type-Options: nosniff header prevents browsers from guessing MIME types of uploaded documents.
+
+E. Man-in-the-Middle (MitM) & Protocol Downgrade:
+   - Strict-Transport-Security (HSTS) with max-age=63072000; includeSubDomains; preload enforces HTTPS encryption across all communication.
+
+F. Server Fingerprinting:
+   - poweredByHeader: false removes the "X-Powered-By: Next.js" banner to deny automated vulnerability scanners backend framework telemetry.
+
+2. INGESTION & FILE PARSER SECURITY
+--------------------------------------------------------------------------------
+- In-Memory Buffer Processing: Uploaded files (.pdf, .docx, .txt) are processed in isolated RAM buffers and are never written as raw executable files onto the host filesystem.
+- Payload Limits: Form-data endpoints reject payloads larger than allowed thresholds.
+- Sanitized Text Pipeline: Extracted text is stripped of control characters before downstream processing.
+
+3. CROSS-ORIGIN RESOURCE SHARING (CORS) & CSRF
+--------------------------------------------------------------------------------
+- CORS policy restricts allowed HTTP methods to GET, POST, PUT, DELETE, PATCH, OPTIONS.
+- Allowed request headers are explicitly whitelisted (Authorization, Content-Type, X-CSRF-Token).
+- State-modifying endpoints validate payload integrity.
+
+4. CREDENTIAL & SECRET ISOLATION
+--------------------------------------------------------------------------------
+- Sensitive environment variables (e.g. GROQ_API_KEY, database credentials) are strictly server-side and never exposed to client-side bundles (no NEXT_PUBLIC_ leakage of secret tokens).
+- Admin Gatekeeper protects administrative features and reset endpoints.
+================================================================================

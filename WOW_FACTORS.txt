@@ -1,0 +1,37 @@
+================================================================================
+TIMELY (SMART CAMPUS AI) — CORE WOW FACTORS
+================================================================================
+
+1. ZERO-PROSE, MULTI-TIER ACTION EXTRACTION
+   - Instantly converts dense, bureaucratic college emails, PDF circulars, and announcements into a crisp, bulleted action checklist in under 2 seconds.
+   - Extracts exact deadlines with time precision (e.g. "15 September 2026, 11:59 PM"), eligibility rules, minimum CGPA thresholds, fees, and links.
+
+2. PERSONALIZED 0-100 RELEVANCE SCORING ENGINE
+   - Analyzes notices against each student's specific Department, Year of Study (1st-4th), CGPA, Active Backlogs, and Career/Academic Interests.
+   - A 3rd Year CSE student with 8.6 CGPA gets a 99% High-Priority match for Deloitte USI / Microsoft SDE drives, while unrelated notices are automatically deprioritized.
+
+3. DUAL-ENGINE GROUNDED RAG ASSISTANT WITH CITATIONS
+   - Powered by Groq LLM (Llama 3.3 70B) with an intelligent fallback token-matching engine.
+   - Every answer cites exact Notice IDs (e.g., CITED_IDS: ["task-101"]) preventing AI hallucinations.
+
+4. 3-LAYER ROBUST DOCUMENT INGESTION PIPELINE
+   - Parses official PDF circulars, Word (.docx) memos, scanned text chunks, and raw email text directly in-memory.
+   - Features zero-failure fallback parsers if external services are unreachable.
+
+5. DUAL-VIEW CALENDAR & TIMELINE (7-DAY STRIP & 30-DAY MONTHLY GRID)
+   - 7-Day Deadline Strip for immediate urgency triage.
+   - Full 30-Day Monthly Calendar with interactive date filtering and deadline badges.
+   - 1-Click Export to .ics (Apple/Outlook) and pre-filled Google Calendar links with preset 24-hour reminders.
+
+6. PROACTIVE WEB NOTIFICATIONS & TOAST BANNER SYSTEM
+   - Native browser Web Notifications API integration.
+   - Automated deadline scanner that warns students of 24h, 48h, and 7-day deadlines without requiring manual setup.
+
+7. "WARM SIGNAL" PROFESSIONAL DESIGN AESTHETICS
+   - Ultra-clean, high-density, zero-gradient UI inspired by Linear and Notion.
+   - High contrast, crisp typography, intuitive color badges, and instant keyboard shortcuts.
+
+8. INSTANT DEMO PERSISTENCE & ADMIN GATEKEEPER
+   - 1-Click admin unlock (admin / timely2026) for demo reviews.
+   - Guaranteed seed recovery: refreshing or resetting always provides realistic cross-domain student scenarios.
+================================================================================

@@ -1,0 +1,110 @@
+================================================================================
+SAMPLE NOTICES ACROSS CROSS-DOMAINS (READY FOR INGESTION / COPY-PASTE)
+================================================================================
+
+--- NOTICE 1: PLACEMENT & RECRUITMENT DOMAIN ---
+EMAIL / PLACEMENT ANNOUNCEMENT
+From: Training & Placement Cell <placement@abcuniversity.edu>
+To: B.Tech CSE & IT Students — 3rd & 4th Year
+Date: 12 September 2026
+Subject: Campus Placement Drive — Deloitte USI | Registration Open
+
+Dear Students,
+The Training & Placement Cell is pleased to announce a campus placement drive by Deloitte USI for eligible B.Tech students.
+
+Position: Analyst — Technology
+Eligible Branches: Computer Science & Engineering, Information Technology
+Eligible Year: 3rd and 4th Year B.Tech students
+Minimum CGPA: 7.5 / 10.0
+Backlogs: No active backlogs
+Work Location: Hyderabad / Bengaluru / Pune
+Expected CTC: INR 9,00,000 per annum
+Registration Deadline: 15 September 2026, 11:59 PM
+Assessment Date: 18 September 2026
+Assessment Mode: Online
+
+Required Action: Eligible students must complete the registration form and upload their latest resume before the registration deadline. Students should also keep their college ID and academic marksheets ready for verification.
+
+Registration link: https://example.edu/placement/deloitte-usi-2026
+
+--------------------------------------------------------------------------------
+--- NOTICE 2: ACADEMIC & EXAMINATION DOMAIN ---
+COLLEGE NOTICE / ACADEMIC ANNOUNCEMENT
+Notice No: ACAD/2026/117
+Issued By: Office of the Dean — Academics
+Date: 12 September 2026
+Category: Examination / Academic
+Audience: All B.Tech 3rd Year Students
+
+Subject: Mid-Semester Examination Registration and Fee Payment
+
+All B.Tech 3rd Year students are informed that registration for the Mid-Semester Examination — September 2026 is now open.
+
+Registration Opens: 12 September 2026
+Registration Deadline: 16 September 2026, 5:00 PM
+Examination Begins: 22 September 2026
+Applicable Students: All B.Tech 3rd Year students
+Fee: INR 850
+Payment Mode: Online through the student portal
+
+Required Action: Log in to the student portal, verify registered subjects, pay the examination fee, and download the confirmation receipt. Students are advised to complete the process before the deadline to avoid late fees.
+
+For technical issues, contact the Academic Office at academics@abcuniversity.edu between 10:00 AM and 4:00 PM on working days.
+
+--------------------------------------------------------------------------------
+--- NOTICE 3: SCHOLARSHIPS & FINANCIAL AID DOMAIN ---
+NATIONAL SCHOLARSHIPS CELL / STUDENT WELFARE DEANERY
+Notice Ref: SWD/SCH/2026/019
+Eligible Batches: 1st, 2nd, 3rd, and 4th Year B.Tech Students (All Departments)
+Date: 10 September 2026
+
+Subject: Applications for Central Sector Scholarship (CSSS) & Merit-cum-Means Grant
+
+Applications are invited from meritorious and economically weaker students for financial assistance for the Academic Year 2026-27.
+
+Eligibility Criteria:
+- Annual family income from all sources must not exceed INR 8,00,000 per annum.
+- Student must have secured at least 80 percentile in 12th Board / minimum 8.0 CGPA in previous college semesters.
+- Scholarship Amount: INR 50,000 per annum plus laptop grant.
+
+Required Actions:
+1. Complete registration on the National Scholarship Portal (NSP 2.0).
+2. Submit attested copies of Income Certificate, Domicile, and Grade cards to Student Welfare Office (Admin Block Room 104) by 30 September 2026, 4:00 PM.
+
+--------------------------------------------------------------------------------
+--- NOTICE 4: HACKATHON & INNOVATION DOMAIN ---
+CENTRE FOR INNOVATION & INCUBATION
+Notice Ref: CII/HACK/2026/08
+Target Audience: All Engineering & Science Students (Years 1 to 4)
+Date: 11 September 2026
+
+Subject: National Smart City AI Hackathon 2026 — Call for Registrations
+
+We are pleased to invite registrations for the 36-Hour National Smart City AI Hackathon 2026.
+
+Key Details:
+- Prize Pool: INR 1,50,000 + Pre-Incubation Grant of INR 5,00,000
+- Problem Statements: Smart Traffic AI, Grid Energy Optimization, Waste Management IoT
+- Team Size: 3-4 members (Inter-branch teams permitted)
+- Registration Deadline: 20 September 2026, 6:00 PM
+- Hackathon Dates: 28-29 September 2026
+
+Required Action: Form your team, prepare a 3-page solution abstract, and submit your registration on hackcampus.edu before the deadline.
+
+--------------------------------------------------------------------------------
+--- NOTICE 5: WORKSHOP & CORE ENGINEERING DOMAIN ---
+DEPARTMENT OF MECHANICAL & AEROSPACE ENGINEERING
+Workshop Notice: MECH/WORK/2026/03
+Target: 1st and 2nd Year Mechanical & Production Students
+Date: 11 September 2026
+
+Subject: Hands-On CAD/CAM & 3D Prototyping Certification Bootcamp
+
+An intensive 3-day hands-on certification bootcamp on SolidWorks CAD and CNC Machining will be held from September 22-24, 2026 at the Central Advanced Machining Lab.
+
+Eligibility: 1st and 2nd Year Mechanical students with minimum 75% department attendance.
+Seats: Limited to 40 participants on a first-come, first-served basis.
+Registration Deadline: 18 September 2026, 3:00 PM.
+
+Required Action: Register at the Department CAD Lab (Room 208) with your faculty advisor's signature.
+================================================================================

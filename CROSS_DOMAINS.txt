@@ -1,0 +1,29 @@
+================================================================================
+TIMELY (SMART CAMPUS AI) — CROSS-DOMAIN INTEGRATIONS
+================================================================================
+
+Timely combines methodologies and technologies across 5 distinct engineering & academic domains:
+
+1. NATURAL LANGUAGE PROCESSING & APPLIED AI (NLP)
+   - Large Language Model (LLM) Structuring using Groq Llama-3.3-70B in JSON mode.
+   - Heuristic Fallback Extraction: Regex stream parsing, date/time pattern extraction, and keyword tokenizers for zero-dependency offline environments.
+   - Text summarization and bulleted action decomposition.
+
+2. INFORMATION RETRIEVAL & RAG (RETRIEVAL-AUGMENTED GENERATION)
+   - Context-grounded conversational assistant that merges student profile vectors with active notice task context.
+   - Multi-field ranking and attribution mechanism (citing specific Notice IDs for verified provenance).
+
+3. ENTERPRISE ACADEMIC & CAMPUS ERP LOGIC
+   - Higher education institutional workflows: Add/Drop elective windows, Examination hall ticket clearances, National Scholarship Portal (NSP) workflows, and Training & Placement Cell recruitment drives.
+   - Eligibility evaluation logic matching branch codes (CSE, IT, ECE, MECH), study years (1-4), semester numbers, CGPA thresholds, and backlogs.
+
+4. FULL-STACK WEB SYSTEMS & REACTIVE ARCHITECTURE
+   - Next.js 14 App Router, React 18, and Tailwind CSS.
+   - Client-side Web Notifications API and iCalendar / RFC 5545 calendar synchronization.
+   - RESTful API design (`/api/ingest`, `/api/parse-file`, `/api/chat`, `/api/tasks`, `/api/profile`).
+
+5. DATA ENGINEERING & PERSISTENCE
+   - Relational schema modeling via Prisma ORM.
+   - ACID-compliant SQLite local storage with foreign key integrity and cascade deletion.
+   - Seed orchestration and state persistence ensuring no demo data loss across page refreshes.
+================================================================================
