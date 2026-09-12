@@ -10,8 +10,8 @@ export async function POST() {
     await prisma.notice.deleteMany({});
     await prisma.student.deleteMany({});
 
-    // 2. Run instant deterministic auto-seeder
-    await ensureDatabaseSeeded();
+    // 2. Run instant deterministic auto-seeder with force reset
+    await ensureDatabaseSeeded(true);
 
     const studentsCount = await prisma.student.count();
     const noticesCount = await prisma.notice.count();
