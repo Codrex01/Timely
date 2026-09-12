@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { TaskStatus } from '@/types';
+import { ensureDatabaseSeeded } from '@/lib/seedHelper';
 
 export async function GET(request: NextRequest) {
   try {
+    // Automatically seed rich demo data if database is empty (e.g. on fresh Render deployment)
+    await ensureDatabaseSeeded();
+
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
     const urgency = searchParams.get('urgency');
