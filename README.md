@@ -54,7 +54,16 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## 🏛️ System Architecture
+## 🏛️ System Architecture & Flow Diagrams
+
+### System Architecture Diagram
+![System Architecture](docs/images/smart_campus_system_architecture.jpg)
+
+### End-to-End Flow Diagram
+![Flow Diagram](docs/images/smart_campus_flow_diagram.jpg)
+
+### High-Level Architecture Overview
+![Architecture Overview](docs/images/smart_campus_architecture.jpg)
 
 ```
 Client (Next.js 14 App Router + Tailwind)
