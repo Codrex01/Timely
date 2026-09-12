@@ -132,12 +132,9 @@ function fallbackExtract(rawText: string): GroqExtractionResult {
   const lines = rawText.split('\n').map((l) => l.trim()).filter((l) => l.length > 0);
   let title = 'Campus Announcement';
   for (const line of lines) {
-    if (line.toLowerCase().startsWith('subject:')) {
-      title = line.replace(/subject:\s*/i, '').trim();
-      break;
-    } else if (line.toLowerCase().startsWith('subject')) {
-      title = line.replace(/subject\s*[:\-—]\s*/i, '').trim();
-      break;
+    if (/^subject/i.test(line)) {
+      title = line.replace(/^subject\s*[:\-—\s]*/i, '').trim();
+      if (title.length > 5) break;
     }
   }
   if (title === 'Campus Announcement') {
