@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Search, Mail, Plus, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Search, Mail, Plus, AlertCircle, CheckCircle2, Lock } from 'lucide-react';
 import { StudentProfile } from '@/types';
 
 interface TopNavProps {
@@ -14,6 +14,7 @@ interface TopNavProps {
   onOpenGmailConnect: () => void;
   onResetSeed?: () => void;
   isSeeding?: boolean;
+  onLockSession?: () => void;
   urgentCount: number;
   completedCount: number;
 }
@@ -28,6 +29,7 @@ export const TopNav: React.FC<TopNavProps> = ({
   onOpenGmailConnect,
   onResetSeed,
   isSeeding,
+  onLockSession,
   urgentCount,
   completedCount,
 }) => {
@@ -109,6 +111,17 @@ export const TopNav: React.FC<TopNavProps> = ({
               {activeStudent.name.charAt(0)}
             </div>
             <span className="text-[#F2F0EA] text-xs">{activeStudent.branchCode} (Y{activeStudent.year})</span>
+          </button>
+        )}
+
+        {/* Lock Session Action */}
+        {onLockSession && (
+          <button
+            onClick={onLockSession}
+            title="Lock administrative session"
+            className="p-1.5 bg-[#1C1B17] hover:bg-[#24221E] text-[#A6A29A] hover:text-[#FF5A1F] border border-[#2B2924] hover:border-[#3D3A33] rounded-[6px] transition-colors"
+          >
+            <Lock className="w-3.5 h-3.5" />
           </button>
         )}
       </div>

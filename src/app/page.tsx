@@ -11,10 +11,14 @@ import { ChatDrawer } from '@/components/ChatDrawer';
 import { ProfileModal } from '@/components/ProfileModal';
 import { NoticeDetailModal } from '@/components/NoticeDetailModal';
 import { DigestModal } from '@/components/DigestModal';
+import { LockScreen } from '@/components/LockScreen';
 import { StudentProfile, ExtractedTaskItem, TaskStatus } from '@/types';
 import { MessageSquareText, Newspaper } from 'lucide-react';
 
 export default function SmartCampusDashboard() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isAuthChecked, setIsAuthChecked] = useState<boolean>(false);
+
   const [currentTab, setCurrentTab] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedDateFilter, setSelectedDateFilter] = useState<string | null>(null);
@@ -31,6 +35,14 @@ export default function SmartCampusDashboard() {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState<boolean>(false);
   const [isDigestModalOpen, setIsDigestModalOpen] = useState<boolean>(false);
   const [inspectingTask, setInspectingTask] = useState<ExtractedTaskItem | null>(null);
+
+  useEffect(() => {
+    const session = typeof window !== 'undefined' ? localStorage.getItem('timely_auth_session') : null;
+    if (session === 'authenticated') {
+      setIsAuthenticated(true);
+    }
+    setIsAuthChecked(true);
+  }, []);
 
   const loadDashboardData = useCallback(async () => {
     setIsLoading(true);
@@ -97,6 +109,13 @@ export default function SmartCampusDashboard() {
     }
   };
 
+  const handleLockSession = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('timely_auth_session');
+    }
+    setIsAuthenticated(false);
+  };
+
   const handleResetSeed = async () => {
     setIsSeeding(true);
     try {
@@ -108,6 +127,10 @@ export default function SmartCampusDashboard() {
       setIsSeeding(false);
     }
   };
+
+  if (isAuthChecked && !isAuthenticated) {
+    return <LockScreen onUnlock={() => setIsAuthenticated(true)} />;
+  }
 
   const displayedTasks = tasks.filter((t) => {
     if (searchQuery.trim().length > 0) {
@@ -181,6 +204,7 @@ export default function SmartCampusDashboard() {
           }}
           onResetSeed={handleResetSeed}
           isSeeding={isSeeding}
+          onLockSession={handleLockSession}
           urgentCount={urgentTasksCount}
           completedCount={completedTasksCount}
         />
